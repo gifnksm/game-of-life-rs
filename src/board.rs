@@ -6,6 +6,7 @@ use std::ops::Index;
 #[derive(Debug, Clone)]
 pub struct Board {
     table: Table<bool>,
+    count: Table<u8>,
     buffer: Table<bool>,
 }
 
@@ -13,6 +14,7 @@ impl Board {
     pub fn new_empty(size: Size) -> Board {
         Board {
             table: Table::new_empty(size, false, false),
+            count: Table::new_empty(size, 0, 0),
             buffer: Table::new_empty(size, false, false),
         }
     }
@@ -29,12 +31,14 @@ impl Board {
         if self.table.contains(p) {
             self.table[p] = v;
         }
+        self.update_count();
     }
 
     pub fn clear(&mut self) {
         for p in self.table.points() {
             self.table[p] = false;
         }
+        self.update_count();
     }
 
     pub fn random_init<R>(&mut self, rng: &mut R)
@@ -43,20 +47,37 @@ impl Board {
         for (p, v) in self.table.points().zip(rng.gen_iter()) {
             self.table[p] = v;
         }
+        self.update_count();
     }
 
     pub fn grow(&mut self) {
         for p in self.table.points() {
-            let num_alive =
-                MOVE_ALL_ADJACENTS.iter().cloned().filter(|&m| self.table[p + m]).count();
+            let num_alive = self.count[p];
             self.buffer[p] = if self.table[p] {
                 num_alive == 2 || num_alive == 3
             } else {
                 num_alive == 3
-            }
+            };
         }
 
         mem::swap(&mut self.table, &mut self.buffer);
+        self.update_count();
+    }
+
+    pub fn update_count(&mut self) {
+        for p in self.table.points() {
+            self.count[p] = 0;
+        }
+
+        for p in self.table.points() {
+            if self.table[p] {
+                for &mv in MOVE_ALL_ADJACENTS.iter() {
+                    if self.table.contains(p + mv) {
+                        self.count[p + mv] += 1;
+                    }
+                }
+            }
+        }
     }
 }
 
