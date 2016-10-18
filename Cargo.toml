@@ -1,0 +1,10 @@
+[package]
+authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
+name = "game-of-life-rs"
+version = "0.1.0"
+
+[dependencies]
+board-game-geom = "0.2.0"
+piston_window = "0.55.0"
+rand = "0.3.14"
+time = "0.1.35"
