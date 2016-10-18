@@ -3,6 +3,7 @@ name = "game-of-life-rs"
 version = "0.1.0"
 dependencies = [
  "board-game-geom 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston_window 0.55.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",

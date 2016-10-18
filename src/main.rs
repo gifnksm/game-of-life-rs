@@ -1,9 +1,10 @@
 extern crate board_game_geom as geom;
+extern crate image as im;
 extern crate piston_window;
 extern crate rand;
 extern crate time;
 
-use app::App;
+use app::{App, AppSettings};
 use piston_window::*;
 
 mod app;
@@ -13,15 +14,17 @@ fn main() {
     let mut running = true;
     let mut rng = rand::thread_rng();
 
-    let mut app = App::default();
-    app.random_init(&mut rng);
+    let app_settings = AppSettings::default();
 
     let mut window: PistonWindow = WindowSettings::new("Conway's Game of Life",
-                                                       (app.win_size().0 as u32,
-                                                        app.win_size().1 as u32))
+                                                       (app_settings.win_size.0 as u32,
+                                                        app_settings.win_size.1 as u32))
         .exit_on_esc(true)
         .build()
         .expect("failed to build PistonWindow");
+
+    let mut app = App::new(&app_settings, &mut window);
+    app.random_init(&mut rng);
 
     while let Some(e) = window.next() {
         if let Some(_args) = e.update_args() {
@@ -70,7 +73,7 @@ fn main() {
         }
 
         if let Some(_args) = e.render_args() {
-            window.draw_2d(&e, |ctx, g2d| app.draw(ctx, g2d));
+            app.draw(&mut window, &e);
         }
     }
 }
