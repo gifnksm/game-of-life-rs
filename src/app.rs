@@ -130,10 +130,14 @@ impl App {
             let a1 = diff.1.abs();
             let a = cmp::max(a0, a1);
             for i in 0..a {
-                let mv = Move(diff.0 * i / a, diff.1 * i / a);
-                self.board.set(old_cell + mv, val);
+                let p = old_cell + Move(diff.0 * i / a, diff.1 * i / a);
+                if self.board.contains(p) {
+                    self.board.set(p, val);
+                }
             }
-            self.board.set(onmouse_cell, val);
+            if self.board.contains(onmouse_cell) {
+                self.board.set(onmouse_cell, val);
+            }
             self.invalidated = true;
         }
     }

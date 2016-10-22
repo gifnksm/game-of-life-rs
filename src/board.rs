@@ -32,6 +32,10 @@ impl Board {
         self.size
     }
 
+    pub fn contains(&self, p: Point) -> bool {
+        0 <= p.0 && p.0 < self.size.0 && 0 <= p.1 && p.1 < self.size.1
+    }
+
     pub fn get(&self, p: Point) -> bool {
         let (offset, mask) = self.get_pos(p);
         (self.table[offset] & mask) != 0
