@@ -103,9 +103,11 @@ impl App {
         let new_size = Size(self.win_size.0 / self.rect_size,
                             self.win_size.1 / self.rect_size);
         let mut board = Board::new_empty(new_size);
-        {
-            let it = board.points().map(|p| (p, self.board[p]));
-            board.set_iter(it);
+        for x in 0..cmp::min(board.size().0, self.board.size().0) {
+            for y in 0..cmp::min(board.size().1, self.board.size().1) {
+                let p = Point(x, y);
+                board.set(p, self.board.get(p));
+            }
         }
 
         self.board = board;
@@ -195,13 +197,16 @@ impl App {
 
         if self.invalidated {
             self.invalidated = false;
-            for p in self.board.points() {
-                let color = if self.board[p] {
-                    [255, 255, 255, 255]
-                } else {
-                    [0, 0, 0, 255]
-                };
-                self.canvas.put_pixel(p.0 as u32, p.1 as u32, Rgba(color));
+            for x in 0..self.board.size().0 {
+                for y in 0..self.board.size().1 {
+                    let p = Point(x, y);
+                    let color = if self.board.get(p) {
+                        [255, 255, 255, 255]
+                    } else {
+                        [0, 0, 0, 255]
+                    };
+                    self.canvas.put_pixel(p.0 as u32, p.1 as u32, Rgba(color));
+                }
             }
             self.texture
                 .update(&mut window.encoder, &self.canvas)

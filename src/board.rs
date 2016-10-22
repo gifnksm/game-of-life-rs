@@ -1,98 +1,159 @@
-use geom::{Geom, MOVE_ALL_ADJACENTS, Point, Points, Size, Table};
+use geom::{Point, Size};
 use rand::Rng;
 use std::mem;
-use std::ops::Index;
+
+const MSB: u64 = 1 << 63;
 
 #[derive(Debug, Clone)]
 pub struct Board {
-    table: Table<bool>,
-    count: Table<u8>,
-    buffer: Table<bool>,
+    size: Size,
+    hsize: i32,
+    table: Vec<u64>,
+    ls: Vec<u64>,
+    rs: Vec<u64>,
+    buffer: Vec<u64>,
 }
 
 impl Board {
-    pub fn new_empty(size: Size) -> Board {
+    pub fn new_empty(size: Size) -> Self {
+        let hsize = (size.0 + 63) / 64 + 1;
+        let len = (hsize as usize) * (((size.1 + 2) as usize)) + 1;
         Board {
-            table: Table::new_empty(size, false, false),
-            count: Table::new_empty(size, 0, 0),
-            buffer: Table::new_empty(size, false, false),
+            hsize: hsize,
+            size: size,
+            table: vec![0; len],
+            ls: vec![0; len],
+            rs: vec![0; len],
+            buffer: vec![0; len],
         }
-    }
-
-    pub fn points(&self) -> Points {
-        self.table.points()
     }
 
     pub fn size(&self) -> Size {
-        self.table.size()
+        self.size
+    }
+
+    pub fn get(&self, p: Point) -> bool {
+        let (offset, mask) = self.get_pos(p);
+        (self.table[offset] & mask) != 0
     }
 
     pub fn set(&mut self, p: Point, v: bool) {
-        if self.table.contains(p) {
-            self.table[p] = v;
-            self.update_count();
+        let (offset, mask) = self.get_pos(p);
+        if v {
+            self.table[offset] |= mask;
+        } else {
+            self.table[offset] &= !mask;
         }
-    }
-
-    pub fn set_iter<I>(&mut self, it: I)
-        where I: Iterator<Item = (Point, bool)>
-    {
-        for (p, v) in it {
-            if self.table.contains(p) {
-                self.table[p] = v;
-            }
-        }
-        self.update_count();
     }
 
     pub fn clear(&mut self) {
-        for p in self.table.points() {
-            self.table[p] = false;
+        for v in &mut self.table {
+            *v = 0;
         }
-        self.update_count();
     }
 
     pub fn random_init<R>(&mut self, rng: &mut R)
         where R: Rng
     {
-        for (p, v) in self.table.points().zip(rng.gen_iter()) {
-            self.table[p] = v;
-        }
-        self.update_count();
-    }
-
-    pub fn grow(&mut self) {
-        for p in self.table.points() {
-            let num_alive = self.count[p];
-            self.buffer[p] = num_alive == 3 || (self.table[p] && num_alive == 2);
-        }
-
-        mem::swap(&mut self.table, &mut self.buffer);
-        self.update_count();
-    }
-
-    fn update_count(&mut self) {
-        for p in self.table.points() {
-            self.count[p] = 0;
-        }
-
-        for p in self.table.points() {
-            if self.table[p] {
-                for &mv in MOVE_ALL_ADJACENTS.iter() {
-                    if self.table.contains(p + mv) {
-                        self.count[p + mv] += 1;
-                    }
-                }
+        for x in 0..self.size.0 {
+            for y in 0..self.size.1 {
+                self.set(Point(x, y), rng.gen());
             }
         }
     }
-}
 
-impl Index<Point> for Board {
-    type Output = bool;
+    pub fn grow(&mut self) {
+        for cx in 0..self.hsize {
+            for cy in 0..self.size.1 {
+                let o = self.offset(cx, cy);
+                let tc = self.table[o];
+                let tl = self.table[self.offset(cx - 1, cy)];
+                let tr = self.table[self.offset(cx + 1, cy)];
+                self.ls[o] = (tc >> 1) | ((tl & 1) << 63);
+                self.rs[o] = (tc << 1) | ((tr & MSB) >> 63);
+            }
+        }
 
-    #[inline]
-    fn index(&self, p: Point) -> &bool {
-        &self.table[p]
+        for cx in 0..self.hsize {
+            for cy in 0..self.size.1 {
+                let oc = self.offset(cx, cy);
+                let ou = self.offset(cx, cy - 1);
+                let od = self.offset(cx, cy + 1);
+
+                let t = [self.ls[ou],
+                         self.ls[oc],
+                         self.ls[od],
+                         self.table[ou],
+                         self.table[od],
+                         self.rs[ou],
+                         self.rs[oc],
+                         self.rs[od]];
+
+                let mut c0 = !(t[0] | t[1]);
+                let mut c1 = t[0] ^ t[1];
+                let mut c2 = t[0] & t[1];
+
+                let mut c3 = c2 & t[2];
+                c2 = (c2 & !t[2]) | (c1 & t[2]);
+                c1 = (c1 & !t[2]) | (c0 & t[2]);
+                c0 &= !t[2];
+
+                // let mut c4 = c3 & t[3];
+                c3 = (c3 & !t[3]) | (c2 & t[3]);
+                c2 = (c2 & !t[3]) | (c1 & t[3]);
+                c1 = (c1 & !t[3]) | (c0 & t[3]);
+                c0 &= !t[3];
+
+                // let mut c5 = c4 & t[4];
+                // c4 = (c4 & !t[4]) | (c3 & t[4]);
+                c3 = (c3 & !t[4]) | (c2 & t[4]);
+                c2 = (c2 & !t[4]) | (c1 & t[4]);
+                c1 = (c1 & !t[4]) | (c0 & t[4]);
+                c0 &= !t[4];
+
+                // let mut c6 = c5 & t[5];
+                // c5 = (c5 & !t[5]) | (c4 & t[5]);
+                // c4 = (c4 & !t[5]) | (c3 & t[5]);
+                c3 = (c3 & !t[5]) | (c2 & t[5]);
+                c2 = (c2 & !t[5]) | (c1 & t[5]);
+                c1 = (c1 & !t[5]) | (c0 & t[5]);
+                c0 &= !t[5];
+
+                // let mut c7 = c6 & t[6];
+                // c6 = (c6 & !t[6]) | (c5 & t[6]);
+                // c5 = (c5 & !t[6]) | (c4 & t[6]);
+                // c4 = (c4 & !t[6]) | (c3 & t[6]);
+                c3 = (c3 & !t[6]) | (c2 & t[6]);
+                c2 = (c2 & !t[6]) | (c1 & t[6]);
+                c1 = (c1 & !t[6]) | (c0 & t[6]);
+                // c0 &= !t[6];
+
+                // let mut c8 = c7 & t[7];
+                // c7 = (c7 & !t[7]) | (c6 & t[7]);
+                // c6 = (c6 & !t[7]) | (c5 & t[7]);
+                // c5 = (c5 & !t[7]) | (c4 & t[7]);
+                // c4 = (c4 & !t[7]) | (c3 & t[7]);
+                c3 = (c3 & !t[7]) | (c2 & t[7]);
+                c2 = (c2 & !t[7]) | (c1 & t[7]);
+                // c1 = (c1 & !t[7]) | (c0 & t[7]);
+                // c0 &= !t[7];
+
+                self.buffer[oc] = c3 | (self.table[oc] & c2);
+            }
+        }
+
+        mem::swap(&mut self.table, &mut self.buffer);
+    }
+
+    fn offset(&self, cx: i32, cy: i32) -> usize {
+        ((cx + 1) as usize) + ((cy + 1) as usize) * (self.hsize as usize)
+    }
+
+    fn get_pos(&self, p: Point) -> (usize, u64) {
+        let cx = (p.0 + 64) / 64 - 1;
+        let cy = p.1;
+        let offset = self.offset(cx, cy);
+        let mask = MSB >> (p.0 % 64);
+        (offset, mask)
     }
 }
