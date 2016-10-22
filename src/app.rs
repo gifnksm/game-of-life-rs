@@ -97,6 +97,26 @@ impl App {
         self.invalidated = true;
     }
 
+    pub fn fit_to_win_size<W>(&mut self, window: &mut PistonWindow<W>)
+        where W: piston_window::Window
+    {
+        let new_size = Size(self.win_size.0 / self.rect_size,
+                            self.win_size.1 / self.rect_size);
+        let mut board = Board::new_empty(new_size);
+        {
+            let it = board.points().map(|p| (p, self.board[p]));
+            board.set_iter(it);
+        }
+
+        self.board = board;
+        self.canvas = ImageBuffer::new(new_size.0 as u32, new_size.1 as u32);
+        self.texture = Texture::from_image(&mut window.factory,
+                                           &self.canvas,
+                                           &TextureSettings::new().filter(Filter::Linear))
+            .expect("failed to build Texture");
+        self.invalidated = true;
+    }
+
     pub fn mouse_move(&mut self, mouse_pos: Point) {
         self.mouse_pos = mouse_pos;
 

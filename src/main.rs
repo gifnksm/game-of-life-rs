@@ -42,6 +42,7 @@ fn main() {
                 Key::R => app.random_init(&mut rng),
                 Key::C => app.clear(),
                 Key::S => running = !running,
+                Key::F => app.fit_to_win_size(&mut window),
                 _ => {}
             }
         }

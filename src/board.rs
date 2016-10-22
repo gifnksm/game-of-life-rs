@@ -30,6 +30,17 @@ impl Board {
     pub fn set(&mut self, p: Point, v: bool) {
         if self.table.contains(p) {
             self.table[p] = v;
+            self.update_count();
+        }
+    }
+
+    pub fn set_iter<I>(&mut self, it: I)
+        where I: Iterator<Item = (Point, bool)>
+    {
+        for (p, v) in it {
+            if self.table.contains(p) {
+                self.table[p] = v;
+            }
         }
         self.update_count();
     }
@@ -53,18 +64,14 @@ impl Board {
     pub fn grow(&mut self) {
         for p in self.table.points() {
             let num_alive = self.count[p];
-            self.buffer[p] = if self.table[p] {
-                num_alive == 2 || num_alive == 3
-            } else {
-                num_alive == 3
-            };
+            self.buffer[p] = num_alive == 3 || (self.table[p] && num_alive == 2);
         }
 
         mem::swap(&mut self.table, &mut self.buffer);
         self.update_count();
     }
 
-    pub fn update_count(&mut self) {
+    fn update_count(&mut self) {
         for p in self.table.points() {
             self.count[p] = 0;
         }
