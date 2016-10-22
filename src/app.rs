@@ -38,23 +38,15 @@ pub struct App {
     erasing: bool,
     moving: Option<(Point, Move)>,
 
-    texture: G2dTexture<'static>,
-    canvas: ImageBuffer<Rgba<u8>, Vec<u8>>,
+    texture: Option<G2dTexture<'static>>,
+    canvas: Option<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     invalidated: bool,
 
     board: Board,
 }
 
 impl App {
-    pub fn new<W>(settings: &AppSettings, window: &mut PistonWindow<W>) -> Self
-        where W: piston_window::Window
-    {
-        let canvas = ImageBuffer::new(settings.board_size.0 as u32, settings.board_size.1 as u32);
-        let texture = Texture::from_image(&mut window.factory,
-                                          &canvas,
-                                          &TextureSettings::new().filter(Filter::Linear))
-            .expect("failed to build Texture");
-
+    pub fn new(settings: &AppSettings) -> Self {
         App {
             win_size: settings.win_size,
             rect_size: settings.rect_size,
@@ -67,8 +59,8 @@ impl App {
             erasing: false,
             moving: None,
 
-            texture: texture,
-            canvas: canvas,
+            texture: None,
+            canvas: None,
             invalidated: true,
 
             board: Board::new_empty(settings.board_size),
@@ -97,9 +89,7 @@ impl App {
         self.invalidated = true;
     }
 
-    pub fn fit_to_win_size<W>(&mut self, window: &mut PistonWindow<W>)
-        where W: piston_window::Window
-    {
+    pub fn fit_to_win_size(&mut self) {
         let new_size = Size(self.win_size.0 / self.rect_size,
                             self.win_size.1 / self.rect_size);
         let mut board = Board::new_empty(new_size);
@@ -111,11 +101,8 @@ impl App {
         }
 
         self.board = board;
-        self.canvas = ImageBuffer::new(new_size.0 as u32, new_size.1 as u32);
-        self.texture = Texture::from_image(&mut window.factory,
-                                           &self.canvas,
-                                           &TextureSettings::new().filter(Filter::Linear))
-            .expect("failed to build Texture");
+        self.canvas = None;
+        self.texture = None;
         self.invalidated = true;
     }
 
@@ -195,8 +182,23 @@ impl App {
     pub fn draw(&mut self, window: &mut PistonWindow, e: &Event) {
         self.adjust_offset();
 
+        if self.canvas.is_none() || self.texture.is_none() {
+            let canvas = ImageBuffer::new(self.board.size().0 as u32, self.board.size().1 as u32);
+            let texture = Texture::from_image(&mut window.factory,
+                                              &canvas,
+                                              &TextureSettings::new().filter(Filter::Linear))
+                .expect("failed to build Texture");
+            self.canvas = Some(canvas);
+            self.texture = Some(texture);
+            self.invalidated = true;
+        }
+
+        let canvas = self.canvas.as_mut().unwrap();
+        let texture = self.texture.as_mut().unwrap();
+
         if self.invalidated {
             self.invalidated = false;
+
             for x in 0..self.board.size().0 {
                 for y in 0..self.board.size().1 {
                     let p = Point(x, y);
@@ -205,19 +207,22 @@ impl App {
                     } else {
                         [0, 0, 0, 255]
                     };
-                    self.canvas.put_pixel(p.0 as u32, p.1 as u32, Rgba(color));
+                    canvas.put_pixel(p.0 as u32, p.1 as u32, Rgba(color));
                 }
             }
-            self.texture
-                .update(&mut window.encoder, &self.canvas)
+
+            texture.update(&mut window.encoder, canvas)
                 .expect("failed to update Texture");
         }
 
+        let offset = self.offset;
+        let rect_size = self.rect_size;
+
         window.draw_2d(e, |ctx, g2d| {
             piston_window::clear([0.3, 0.3, 0.3, 1.0], g2d);
-            piston_window::image(&self.texture,
-                                 ctx.trans(self.offset.0 as f64, self.offset.1 as f64)
-                                     .scale(self.rect_size as f64, self.rect_size as f64)
+            piston_window::image(texture,
+                                 ctx.trans(offset.0 as f64, offset.1 as f64)
+                                     .scale(rect_size as f64, rect_size as f64)
                                      .transform,
                                  g2d);
         });
