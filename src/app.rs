@@ -1,7 +1,7 @@
 use board::Board;
 use geom::{Move, Point, Size};
 use im::{ImageBuffer, Rgba};
-use piston_window::{self, Event, G2dTexture, PistonWindow, Texture, TextureSettings, Transformed};
+use piston_window::{self, Event, G2dTexture, PistonWindow, Texture, TextureSettings};
 use piston_window::texture::Filter;
 use rand::Rng;
 use std::cmp;
@@ -87,6 +87,8 @@ impl App {
     pub fn set_win_size(&mut self, size: Size) {
         self.win_size = size;
         self.invalidated = true;
+        self.canvas = None;
+        self.texture = None;
     }
 
     pub fn fit_to_win_size(&mut self) {
@@ -101,8 +103,6 @@ impl App {
         }
 
         self.board = board;
-        self.canvas = None;
-        self.texture = None;
         self.invalidated = true;
     }
 
@@ -187,7 +187,7 @@ impl App {
         self.adjust_offset();
 
         if self.canvas.is_none() || self.texture.is_none() {
-            let canvas = ImageBuffer::new(self.board.size().0 as u32, self.board.size().1 as u32);
+            let canvas = ImageBuffer::new(self.win_size.0 as u32, self.win_size.1 as u32);
             let texture = Texture::from_image(&mut window.factory,
                                               &canvas,
                                               &TextureSettings::new().filter(Filter::Linear))
@@ -203,15 +203,18 @@ impl App {
         if self.invalidated {
             self.invalidated = false;
 
-            for x in 0..self.board.size().0 {
-                for y in 0..self.board.size().1 {
-                    let p = Point(x, y);
-                    let color = if self.board.get(p) {
+            for wx in 0..self.win_size.0 {
+                for wy in 0..self.win_size.1 {
+                    let p = Point((wx - self.offset.0) / self.rect_size,
+                                  (wy - self.offset.1) / self.rect_size);
+                    let color = if !self.board.contains(p) {
+                        [128, 128, 128, 255]
+                    } else if self.board.get(p) {
                         [255, 255, 255, 255]
                     } else {
                         [0, 0, 0, 255]
                     };
-                    canvas.put_pixel(p.0 as u32, p.1 as u32, Rgba(color));
+                    canvas.put_pixel(wx as u32, wy as u32, Rgba(color));
                 }
             }
 
@@ -219,16 +222,8 @@ impl App {
                 .expect("failed to update Texture");
         }
 
-        let offset = self.offset;
-        let rect_size = self.rect_size;
-
         window.draw_2d(e, |ctx, g2d| {
-            piston_window::clear([0.3, 0.3, 0.3, 1.0], g2d);
-            piston_window::image(texture,
-                                 ctx.trans(offset.0 as f64, offset.1 as f64)
-                                     .scale(rect_size as f64, rect_size as f64)
-                                     .transform,
-                                 g2d);
+            piston_window::image(texture, ctx.transform, g2d);
         });
     }
 
