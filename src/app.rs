@@ -95,10 +95,21 @@ impl App {
         let new_size = Size(self.win_size.0 / self.rect_size,
                             self.win_size.1 / self.rect_size);
         let mut board = Board::new_empty(new_size);
+
+        let x_off = if board.size().0 > self.board.size().0 {
+            (board.size().0 - self.board.size().0) / 2
+        } else {
+            0
+        };
+        let y_off = if board.size().1 > self.board.size().1 {
+            (board.size().1 - self.board.size().1) / 2
+        } else {
+            0
+        };
+
         for x in 0..cmp::min(board.size().0, self.board.size().0) {
             for y in 0..cmp::min(board.size().1, self.board.size().1) {
-                let p = Point(x, y);
-                board.set(p, self.board.get(p));
+                board.set(Point(x + x_off, y + y_off), self.board.get(Point(x, y)));
             }
         }
 
