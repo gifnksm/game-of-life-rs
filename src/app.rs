@@ -1,12 +1,9 @@
 use board::Board;
 use geom::{Move, Point, Size};
-use gfx_graphics::{Texture, TextureSettings};
-use graphics;
-use graphics::context::Context;
 use im::{ImageBuffer, Rgba};
+use opengl_graphics::{Texture, TextureSettings};
 use rand::Rng;
 use std::cmp;
-use super::{AppFactory, AppGraphics, AppResources, GfxEncoder};
 
 pub struct AppSettings {
     pub win_size: Size,
@@ -40,7 +37,7 @@ pub struct App {
     erasing: bool,
     moving: Option<(Point, Move)>,
 
-    texture: Option<Texture<AppResources>>,
+    texture: Option<Texture>,
     canvas: Option<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     invalidated: bool,
 
@@ -196,47 +193,44 @@ impl App {
         }
     }
 
-    pub fn update_texture(&mut self, factory: &mut AppFactory, encoder: &mut GfxEncoder) {
+    pub fn texture(&mut self) -> &Texture {
         self.adjust_offset();
 
         if self.canvas.is_none() || self.texture.is_none() {
             let canvas = ImageBuffer::new(self.win_size.0 as u32, self.win_size.1 as u32);
-            let texture = Texture::from_image(factory, &canvas, &TextureSettings::new())
-                .expect("failed to build Texture");
+            let texture = Texture::from_image(&canvas, &TextureSettings::new());
             self.canvas = Some(canvas);
             self.texture = Some(texture);
             self.invalidated = true;
         }
 
-        let canvas = self.canvas.as_mut().unwrap();
-        let texture = self.texture.as_mut().unwrap();
+        {
+            let canvas = self.canvas.as_mut().unwrap();
+            let texture = self.texture.as_mut().unwrap();
 
-        if self.invalidated {
-            self.invalidated = false;
+            if self.invalidated {
+                self.invalidated = false;
 
-            for wx in 0..self.win_size.0 {
-                for wy in 0..self.win_size.1 {
-                    let p = Point((wx - self.offset.0) / self.rect_size,
-                                  (wy - self.offset.1) / self.rect_size);
-                    let color = if !self.board.contains(p) {
-                        [128, 128, 128, 255]
-                    } else if self.board.get(p) {
-                        [255, 255, 255, 255]
-                    } else {
-                        [0, 0, 0, 255]
-                    };
-                    canvas.put_pixel(wx as u32, wy as u32, Rgba(color));
+                for wx in 0..self.win_size.0 {
+                    for wy in 0..self.win_size.1 {
+                        let p = Point((wx - self.offset.0) / self.rect_size,
+                                      (wy - self.offset.1) / self.rect_size);
+                        let color = if !self.board.contains(p) {
+                            [128, 128, 128, 255]
+                        } else if self.board.get(p) {
+                            [255, 255, 255, 255]
+                        } else {
+                            [0, 0, 0, 255]
+                        };
+                        canvas.put_pixel(wx as u32, wy as u32, Rgba(color));
+                    }
                 }
+
+                texture.update(canvas);
             }
-
-            texture.update(encoder, canvas)
-                .expect("failed to update Texture");
         }
-    }
 
-    pub fn draw(&mut self, ctx: Context, g2d: &mut AppGraphics) {
-        let texture = self.texture.as_mut().unwrap();
-        graphics::image(texture, ctx.transform, g2d);
+        self.texture.as_ref().unwrap()
     }
 
     fn board_size(&self) -> Size {
