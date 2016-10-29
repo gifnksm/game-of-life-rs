@@ -1,10 +1,11 @@
 use board::Board;
 use geom::{Move, Point, Size};
 use im::{ImageBuffer, Rgba};
-use piston_window::{self, Event, G2dTexture, PistonWindow, Texture, TextureSettings};
+use piston_window::{self, Event, G2dTexture, Texture, TextureSettings};
 use piston_window::texture::Filter;
 use rand::Rng;
 use std::cmp;
+use super::AppWindow;
 
 pub struct AppSettings {
     pub win_size: Size,
@@ -194,7 +195,7 @@ impl App {
         }
     }
 
-    pub fn draw(&mut self, window: &mut PistonWindow, e: &Event) {
+    pub fn draw(&mut self, window: &mut AppWindow, e: &Event) {
         self.adjust_offset();
 
         if self.canvas.is_none() || self.texture.is_none() {

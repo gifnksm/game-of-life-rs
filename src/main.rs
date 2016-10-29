@@ -10,15 +10,17 @@ use piston_window::*;
 mod app;
 mod board;
 
+type AppWindow = PistonWindow;
+
 fn main() {
     let mut running = true;
     let mut rng = rand::thread_rng();
 
     let app_settings = AppSettings::default();
 
-    let mut window: PistonWindow = WindowSettings::new("Conway's Game of Life",
-                                                       (app_settings.win_size.0 as u32,
-                                                        app_settings.win_size.1 as u32))
+    let mut window: AppWindow = WindowSettings::new("Conway's Game of Life",
+                                                    (app_settings.win_size.0 as u32,
+                                                     app_settings.win_size.1 as u32))
         .exit_on_esc(true)
         .build()
         .expect("failed to build PistonWindow");
