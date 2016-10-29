@@ -1,11 +1,12 @@
 use board::Board;
 use geom::{Move, Point, Size};
+use gfx_graphics::{Texture, TextureSettings};
+use graphics;
+use graphics::context::Context;
 use im::{ImageBuffer, Rgba};
-use piston_window::{self, Event, G2dTexture, Texture, TextureSettings};
-use piston_window::texture::Filter;
 use rand::Rng;
 use std::cmp;
-use super::AppWindow;
+use super::{AppFactory, AppGraphics, AppResources, GfxEncoder};
 
 pub struct AppSettings {
     pub win_size: Size,
@@ -39,7 +40,7 @@ pub struct App {
     erasing: bool,
     moving: Option<(Point, Move)>,
 
-    texture: Option<G2dTexture<'static>>,
+    texture: Option<Texture<AppResources>>,
     canvas: Option<ImageBuffer<Rgba<u8>, Vec<u8>>>,
     invalidated: bool,
 
@@ -195,14 +196,12 @@ impl App {
         }
     }
 
-    pub fn draw(&mut self, window: &mut AppWindow, e: &Event) {
+    pub fn update_texture(&mut self, factory: &mut AppFactory, encoder: &mut GfxEncoder) {
         self.adjust_offset();
 
         if self.canvas.is_none() || self.texture.is_none() {
             let canvas = ImageBuffer::new(self.win_size.0 as u32, self.win_size.1 as u32);
-            let texture = Texture::from_image(&mut window.factory,
-                                              &canvas,
-                                              &TextureSettings::new().filter(Filter::Linear))
+            let texture = Texture::from_image(factory, &canvas, &TextureSettings::new())
                 .expect("failed to build Texture");
             self.canvas = Some(canvas);
             self.texture = Some(texture);
@@ -230,13 +229,14 @@ impl App {
                 }
             }
 
-            texture.update(&mut window.encoder, canvas)
+            texture.update(encoder, canvas)
                 .expect("failed to update Texture");
         }
+    }
 
-        window.draw_2d(e, |ctx, g2d| {
-            piston_window::image(texture, ctx.transform, g2d);
-        });
+    pub fn draw(&mut self, ctx: Context, g2d: &mut AppGraphics) {
+        let texture = self.texture.as_mut().unwrap();
+        graphics::image(texture, ctx.transform, g2d);
     }
 
     fn board_size(&self) -> Size {
