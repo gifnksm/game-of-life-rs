@@ -12,7 +12,7 @@ MEM_FILE = $(subst -,_,$(PROJECT)).js.mem
 CARGO_OUTDIR = target/$(TARGET)/$(buildtype)
 
 CARGO_OPTION = --target $(TARGET)
-EMCC_OPTION = -s USE_SDL=2 -s USE_WEBGL2=1 -s FULL_ES3=1
+EMCC_OPTION = -s USE_SDL=2
 
 ifeq ($(buildtype),release)
 CARGO_OPTION += --release
