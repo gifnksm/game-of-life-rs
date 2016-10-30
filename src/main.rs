@@ -5,8 +5,6 @@ extern crate gfx;
 extern crate gfx_core;
 extern crate graphics;
 extern crate image as im;
-#[macro_use]
-extern crate lazy_static;
 extern crate libc;
 extern crate opengl_graphics;
 extern crate piston;
@@ -23,44 +21,42 @@ use piston::input::{Button, Key, MouseButton, MouseCursorEvent, MouseScrollEvent
 use piston::window::{OpenGLWindow, WindowSettings};
 use sdl2_window::Sdl2Window;
 use shader_version::OpenGL;
-use std::sync::Mutex;
 
 mod app;
 mod board;
 
 type AppWindow = Sdl2Window;
 
-lazy_static! {
-    static ref APP_SETTINGS: AppSettings = AppSettings::default();
-    static ref APP: Mutex<App> = {
-        let mut app = App::new(&APP_SETTINGS);
-        app.random_init(&mut rand::thread_rng());
-        Mutex::new(app)
-    };
-}
-
+static mut APP: Option<App> = None;
 static mut WINDOW: Option<AppWindow> = None;
 static mut EVENTS: Option<WindowEvents> = None;
 static mut GL_GRAPHICS: Option<GlGraphics> = None;
 
 fn main_loop() -> bool {
     unsafe {
-        if WINDOW.is_none() {
+        if APP.is_none() {
+            let app_settings = AppSettings::default();
+            let mut app = App::new(&app_settings);
+            app.random_init(&mut rand::thread_rng());
             let window: AppWindow = WindowSettings::new("Conway's Game of Life",
-                                                        (APP_SETTINGS.win_size.0 as u32,
-                                                         APP_SETTINGS.win_size.1 as u32))
+                                                        (app_settings.win_size.0 as u32,
+                                                         app_settings.win_size.1 as u32))
                 .opengl(OpenGL::V2_1)
                 .srgb(false)
                 .exit_on_esc(true)
                 .build()
                 .expect("failed to build Window");
-            EVENTS = Some(window.events());
+            let events = window.events();
+            let gl_graphics = GlGraphics::new(OpenGL::V2_1);
+
+            APP = Some(app);
             WINDOW = Some(window);
-            GL_GRAPHICS = Some(GlGraphics::new(OpenGL::V2_1));
+            EVENTS = Some(events);
+            GL_GRAPHICS = Some(gl_graphics);
         }
     }
 
-    let mut app = APP.lock().expect("failed to acquire app lock");
+    let mut app = unsafe { APP.as_mut().unwrap() };
     let mut window = unsafe { WINDOW.as_mut().unwrap() };
     let mut events = unsafe { EVENTS.as_mut().unwrap() };
     let mut gl = unsafe { GL_GRAPHICS.as_mut().unwrap() };

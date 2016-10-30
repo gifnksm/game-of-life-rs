@@ -6,7 +6,6 @@ dependencies = [
  "gfx 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx_core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.10.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston2d-graphics 0.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
