@@ -30,6 +30,7 @@ pub struct App {
     rect_size: i32,
     offset: Move,
 
+    running: bool,
     mouse_pos: Point,
     onmouse_cell: Point,
 
@@ -51,6 +52,7 @@ impl App {
             rect_size: settings.rect_size,
             offset: Move(0, 0),
 
+            running: true,
             mouse_pos: Point(0, 0),
             onmouse_cell: Point(0, 0),
 
@@ -78,9 +80,18 @@ impl App {
         self.invalidated = true;
     }
 
-    pub fn grow(&mut self) {
-        self.board.grow();
-        self.invalidated = true;
+    pub fn step(&mut self) {
+        if !self.running {
+            self.board.grow();
+            self.invalidated = true;
+        }
+    }
+
+    pub fn run(&mut self) {
+        if self.running {
+            self.board.grow();
+            self.invalidated = true;
+        }
     }
 
     pub fn set_win_size(&mut self, size: Size) {
@@ -114,6 +125,10 @@ impl App {
 
         self.board = board;
         self.invalidated = true;
+    }
+
+    pub fn toggle_running(&mut self) {
+        self.running = !self.running;
     }
 
     pub fn mouse_move(&mut self, mouse_pos: Point) {

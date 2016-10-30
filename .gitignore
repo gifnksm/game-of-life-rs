@@ -1,1 +1,3 @@
 target
+srv/*.js
+srv/*.js.mem
