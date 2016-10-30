@@ -9,7 +9,7 @@ SRV_PORT = 8080
 JS_FILE = $(PROJECT).js
 MEM_FILE = $(subst -,_,$(PROJECT)).js.mem
 
-CARGO_OUTDIR = target/$(TARGET)/$(buildtype)/
+CARGO_OUTDIR = target/$(TARGET)/$(buildtype)
 
 CARGO_OPTION = --target $(TARGET)
 EMCC_OPTION = -s USE_SDL=2 -s USE_WEBGL2=1 -s FULL_ES3=1
@@ -43,9 +43,10 @@ FORCE:
 .PHONY: FORCE
 
 $(CARGO_OUTDIR)/$(JS_FILE): FORCE
+	$(RM) $(SRV_FILES)
 	EMMAKEN_CFLAGS="$(EMCC_OPTION)" cargo build $(CARGO_OPTION)
 
 $(CARGO_OUTDIR)/$(MEM_FILE): $(CARGO_OUTDIR)/$(JS_FILE)
 
-$(SRV_DIR)/%: $(CARGO_OUTDIR)/%
+$(SRV_DIR)/%: $(CARGO_OUTDIR)/% FORCE
 	cp $< $@
