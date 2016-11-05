@@ -21,7 +21,9 @@ time = "0.1.35"
 git = "https://github.com/seanmonstar/num_cpus"
 
 [replace."piston-shaders_graphics2d:0.1.0"]
-path = "../emscripten/shaders/graphics2d"
+git = "https://github.com/gifnksm/shaders"
+branch = "emscripten"
 
 [replace."piston2d-opengl_graphics:0.35.0"]
-path = "../emscripten/opengl_graphics"
+git = "https://github.com/gifnksm/opengl_graphics"
+branch = "emscripten"
