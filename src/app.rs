@@ -29,6 +29,7 @@ pub struct App {
     win_size: Size,
     rect_size: i32,
     offset: Move,
+    slide: Move,
 
     running: bool,
     mouse_pos: Point,
@@ -51,6 +52,7 @@ impl App {
             win_size: settings.win_size,
             rect_size: settings.rect_size,
             offset: Move(0, 0),
+            slide: Move(0, 0),
 
             running: true,
             mouse_pos: Point(0, 0),
@@ -87,7 +89,13 @@ impl App {
         }
     }
 
-    pub fn run(&mut self) {
+    pub fn update(&mut self) {
+        if self.slide != Move(0, 0) {
+            self.offset = self.offset -
+                          Move(self.slide.0 * self.rect_size, self.slide.1 * self.rect_size);
+            self.invalidated = true;
+        }
+
         if self.running {
             self.board.grow();
             self.invalidated = true;
@@ -190,10 +198,8 @@ impl App {
         self.invalidated = true;
     }
 
-    pub fn slide(&mut self, dx: i32, dy: i32) {
-        self.offset = Move(self.offset.0 - dx * self.rect_size,
-                           self.offset.1 - dy * self.rect_size);
-        self.invalidated = true;
+    pub fn slide(&mut self, mv: Move) {
+        self.slide = self.slide + mv;
     }
 
     pub fn drawing(&mut self, val: bool) {

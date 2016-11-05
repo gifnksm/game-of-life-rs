@@ -59,7 +59,7 @@ fn main_loop() -> bool {
 
     if let Some(e) = events.next(window) {
         if let Some(_args) = e.update_args() {
-            app.run();
+            app.update();
         }
 
         if let Some(size) = e.resize_args() {
@@ -75,10 +75,20 @@ fn main_loop() -> bool {
                 Key::Space => app.step(),
                 Key::Equals => app.zoom(1),
                 Key::Minus => app.zoom(-1),
-                Key::Right => app.slide(1, 0),
-                Key::Left => app.slide(-1, 0),
-                Key::Up => app.slide(0, -1),
-                Key::Down => app.slide(0, 1),
+                Key::Right => app.slide(geom::Move(1, 0)),
+                Key::Left => app.slide(geom::Move(-1, 0)),
+                Key::Up => app.slide(geom::Move(0, -1)),
+                Key::Down => app.slide(geom::Move(0, 1)),
+                _ => {}
+            }
+        }
+
+        if let Some(Button::Keyboard(key)) = e.release_args() {
+            match key {
+                Key::Right => app.slide(geom::Move(-1, 0)),
+                Key::Left => app.slide(geom::Move(1, 0)),
+                Key::Up => app.slide(geom::Move(0, 1)),
+                Key::Down => app.slide(geom::Move(0, -1)),
                 _ => {}
             }
         }
