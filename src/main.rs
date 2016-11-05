@@ -75,6 +75,12 @@ fn main_loop() -> bool {
                 Key::S => app.toggle_running(),
                 Key::F => app.fit_to_win_size(),
                 Key::Space => app.step(),
+                Key::Equals => app.zoom(1),
+                Key::Minus => app.zoom(-1),
+                Key::Right => app.slide(1, 0),
+                Key::Left => app.slide(-1, 0),
+                Key::Up => app.slide(0, -1),
+                Key::Down => app.slide(0, 1),
                 _ => {}
             }
         }

@@ -190,6 +190,12 @@ impl App {
         self.invalidated = true;
     }
 
+    pub fn slide(&mut self, dx: i32, dy: i32) {
+        self.offset = Move(self.offset.0 - dx * self.rect_size,
+                           self.offset.1 - dy * self.rect_size);
+        self.invalidated = true;
+    }
+
     pub fn drawing(&mut self, val: bool) {
         self.drawing = val;
         let mouse_pos = self.mouse_pos;
