@@ -106,7 +106,11 @@ fn main_loop() -> bool {
         }
 
         if let Some(vol) = e.mouse_scroll_args() {
-            app.zoom(vol[1] as i32);
+            match vol[1] {
+                x if x > 0.0 => app.zoom(1),
+                x if x < 0.0 => app.zoom(-1),
+                _ => {}
+            }
         }
 
         if let Some(args) = e.render_args() {
