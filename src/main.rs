@@ -1,8 +1,6 @@
 #![feature(drop_types_in_const)]
 
 extern crate board_game_geom as geom;
-extern crate gfx;
-extern crate gfx_core;
 extern crate graphics;
 extern crate image as im;
 extern crate libc;
