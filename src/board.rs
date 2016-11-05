@@ -2,21 +2,23 @@ use geom::{Point, Size};
 use rand::Rng;
 use std::mem;
 
-const MSB: u64 = 1 << 63;
+type Cell = u64;
+const BITS: usize = 64;
+const MSB: Cell = 1 << (BITS - 1);
 
 #[derive(Debug, Clone)]
 pub struct Board {
     size: Size,
     hsize: i32,
-    table: Vec<u64>,
-    ls: Vec<u64>,
-    rs: Vec<u64>,
-    buffer: Vec<u64>,
+    table: Vec<Cell>,
+    ls: Vec<Cell>,
+    rs: Vec<Cell>,
+    buffer: Vec<Cell>,
 }
 
 impl Board {
     pub fn new_empty(size: Size) -> Self {
-        let hsize = (size.0 + 63) / 64 + 1;
+        let hsize = (size.0 + ((BITS - 1) as i32)) / (BITS as i32) + 1;
         let len = (hsize as usize) * (((size.1 + 2) as usize)) + 1;
         Board {
             hsize: hsize,
@@ -73,8 +75,8 @@ impl Board {
                 let tc = self.table[o];
                 let tl = self.table[self.offset(cx - 1, cy)];
                 let tr = self.table[self.offset(cx + 1, cy)];
-                self.ls[o] = (tc >> 1) | ((tl & 1) << 63);
-                self.rs[o] = (tc << 1) | ((tr & MSB) >> 63);
+                self.ls[o] = (tc >> 1) | ((tl & 1) << (BITS - 1));
+                self.rs[o] = (tc << 1) | ((tr & MSB) >> (BITS - 1));
             }
         }
 
@@ -153,11 +155,11 @@ impl Board {
         ((cx + 1) as usize) + ((cy + 1) as usize) * (self.hsize as usize)
     }
 
-    fn get_pos(&self, p: Point) -> (usize, u64) {
-        let cx = (p.0 + 64) / 64 - 1;
+    fn get_pos(&self, p: Point) -> (usize, Cell) {
+        let cx = (p.0 + (BITS as i32)) / (BITS as i32) - 1;
         let cy = p.1;
         let offset = self.offset(cx, cy);
-        let mask = MSB >> (p.0 % 64);
+        let mask = MSB >> (p.0 % (BITS as i32));
         (offset, mask)
     }
 }
