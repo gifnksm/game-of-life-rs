@@ -8,17 +8,15 @@ extern crate opengl_graphics;
 extern crate piston;
 extern crate sdl2_window;
 extern crate rand;
-extern crate shader_version;
 extern crate time;
 
 use app::{App, AppSettings};
-use opengl_graphics::GlGraphics;
+use opengl_graphics::{GlGraphics, OpenGL};
 use piston::event_loop::{Events, WindowEvents};
 use piston::input::{Button, Key, MouseButton, MouseCursorEvent, MouseScrollEvent, PressEvent,
                     ReleaseEvent, RenderEvent, ResizeEvent, UpdateEvent};
 use piston::window::{OpenGLWindow, WindowSettings};
 use sdl2_window::Sdl2Window;
-use shader_version::OpenGL;
 
 mod app;
 mod board;

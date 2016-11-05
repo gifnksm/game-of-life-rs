@@ -12,7 +12,6 @@ piston2d-graphics = "0.18.0"
 piston2d-opengl_graphics = "0.35.0"
 pistoncore-sdl2_window = "0.36.0"
 rand = "0.3.14"
-shader_version = "0.2.1"
 time = "0.1.35"
 
 [replace]
