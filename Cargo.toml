@@ -6,7 +6,6 @@ version = "0.1.0"
 [dependencies]
 board-game-geom = "0.2.0"
 image = "0.10.3"
-libc = "0.2.17"
 piston = "0.26.0"
 piston2d-graphics = "0.19.0"
 piston2d-opengl_graphics = "0.36.0"
@@ -14,15 +13,18 @@ pistoncore-sdl2_window = "0.36.0"
 rand = "0.3.14"
 time = "0.1.35"
 
+[target.'cfg(target_os = "emscripten")'.dependencies]
+libc = "0.2.17"
+
 [replace]
 
 [replace."num_cpus:1.1.0"]
 git = "https://github.com/seanmonstar/num_cpus"
 
 [replace."piston-shaders_graphics2d:0.1.0"]
-git = "https://github.com/gifnksm/shaders"
 branch = "emscripten"
+git = "https://github.com/gifnksm/shaders"
 
 [replace."piston2d-opengl_graphics:0.36.0"]
-git = "https://github.com/gifnksm/opengl_graphics"
 branch = "emscripten-0.36.0"
+git = "https://github.com/gifnksm/opengl_graphics"
