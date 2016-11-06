@@ -17,39 +17,26 @@ use sdl2_window::Sdl2Window;
 mod app;
 mod board;
 
-type AppWindow = Sdl2Window;
+fn main() {
+    let app_settings = AppSettings::default();
+    let opengl = OpenGL::V2_1;
+    let window: Sdl2Window = WindowSettings::new("Conway's Game of Life",
+                                                 (app_settings.win_size.0 as u32,
+                                                  app_settings.win_size.1 as u32))
+        .opengl(opengl)
+        .srgb(false)
+        .exit_on_esc(true)
+        .build()
+        .expect("failed to build Window");
+    let gl_graphics = GlGraphics::new(opengl);
 
-struct Arg {
-    app: App,
-    window: AppWindow,
-    gl_graphics: GlGraphics,
+    let mut app = App::new(&app_settings, gl_graphics);
+    app.random_init(&mut rand::thread_rng());
+
+    event_loop::run(app, window);
 }
 
-impl Arg {
-    fn new() -> Arg {
-        let app_settings = AppSettings::default();
-        let mut app = App::new(&app_settings);
-        app.random_init(&mut rand::thread_rng());
-        let window: AppWindow = WindowSettings::new("Conway's Game of Life",
-                                                    (app_settings.win_size.0 as u32,
-                                                     app_settings.win_size.1 as u32))
-            .opengl(OpenGL::V2_1)
-            .srgb(false)
-            .exit_on_esc(true)
-            .build()
-            .expect("failed to build Window");
-        let gl_graphics = GlGraphics::new(OpenGL::V2_1);
-        Arg {
-            app: app,
-            window: window,
-            gl_graphics: gl_graphics,
-        }
-    }
-}
-
-fn handle_event(e: Event, arg: &mut Arg) {
-    let &mut Arg { ref mut app, ref mut window, ref mut gl_graphics } = arg;
-
+fn handle_event(e: Event, app: &mut App, window: &mut Sdl2Window) {
     if let Some(_args) = e.update_args() {
         app.update();
     }
@@ -117,27 +104,33 @@ fn handle_event(e: Event, arg: &mut Arg) {
 
     if let Some(args) = e.render_args() {
         window.make_current();
-        gl_graphics.draw(args.viewport(),
-                         |ctx, g2d| graphics::image(app.texture(), ctx.transform, g2d));
+        app.draw(args);
     }
 }
 
 #[cfg(not(target_os = "emscripten"))]
-fn main() {
-    use piston::event_loop::Events;
+mod event_loop {
+    use app::App;
+    use sdl2_window::Sdl2Window;
 
-    let mut arg = Arg::new();
-    let mut events = arg.window.events();
-    while let Some(e) = events.next(&mut arg.window) {
-        handle_event(e, &mut arg);
+    pub fn run(mut app: App, mut window: Sdl2Window) {
+        use piston::event_loop::Events;
+
+        let mut events = window.events();
+        while let Some(e) = events.next(&mut window) {
+            super::handle_event(e, &mut app, &mut window);
+        }
     }
 }
 
 #[cfg(target_os = "emscripten")]
-fn main() {
+mod event_loop {
     extern crate libc;
+    use app::App;
+    use piston::input::{AfterRenderArgs, Event, RenderArgs, UpdateArgs};
     use piston::window::Window;
-    use piston::input::{AfterRenderArgs, RenderArgs, UpdateArgs};
+    use sdl2_window::Sdl2Window;
+    use std::mem;
 
     extern "C" {
         pub fn emscripten_set_main_loop_arg(func: extern "C" fn(*mut libc::c_void),
@@ -148,48 +141,54 @@ fn main() {
         pub fn emscripten_get_now() -> libc::c_float;
     }
 
-    struct EMArg {
+    struct EventLoop {
         last_updated: f64,
-        arg: Arg,
+        app: App,
+        window: Sdl2Window,
     }
 
-    let mut arg = EMArg {
-        last_updated: unsafe { emscripten_get_now() as f64 },
-        arg: Arg::new(),
-    };
+    pub fn run(app: App, window: Sdl2Window) {
+        let mut events = Box::new(EventLoop {
+            last_updated: unsafe { emscripten_get_now() as f64 },
+            app: app,
+            window: window,
+        });
 
-    unsafe {
-        let emarg = &mut arg as *mut _ as *mut libc::c_void;
-        emscripten_set_main_loop_arg(main_loop_c, emarg, 0, 1);
+        unsafe {
+            let events_ptr = &mut *events as *mut EventLoop as *mut libc::c_void;
+            emscripten_set_main_loop_arg(main_loop_c, events_ptr, 0, 1);
+            mem::forget(events);
+        }
     }
 
     extern "C" fn main_loop_c(arg: *mut libc::c_void) {
         unsafe {
-            let mut emarg: &mut EMArg = std::mem::transmute(arg);
-            let arg = &mut emarg.arg;
-            arg.window.swap_buffers();
+            let mut events: &mut EventLoop = mem::transmute(arg);
+            let app = &mut events.app;
+            let window = &mut events.window;
+            window.swap_buffers();
 
             let e = Event::AfterRender(AfterRenderArgs);
-            handle_event(e, arg);
+            super::handle_event(e, app, window);
 
-            while let Some(e) = arg.window.poll_event() {
-                handle_event(Event::Input(e), arg);
+            while let Some(e) = window.poll_event() {
+                super::handle_event(Event::Input(e), app, window);
             }
 
-            if arg.window.should_close() {
+            if window.should_close() {
                 emscripten_cancel_main_loop();
                 return;
             }
 
             let now = emscripten_get_now() as f64;
-            let dt = now - emarg.last_updated;
-            emarg.last_updated = now;
+            let dt = now - events.last_updated;
+            events.last_updated = now;
 
             let e = Event::Update(UpdateArgs { dt: dt });
-            handle_event(e, arg);
+            super::handle_event(e, app, window);
 
-            let size = arg.window.size();
-            let draw_size = arg.window.draw_size();
+            let size = window.size();
+            let draw_size = window.draw_size();
             let e = Event::Render(RenderArgs {
                 ext_dt: dt,
                 width: size.width,
@@ -197,7 +196,7 @@ fn main() {
                 draw_width: draw_size.width,
                 draw_height: draw_size.height,
             });
-            handle_event(e, arg);
+            super::handle_event(e, app, window);
         }
     }
 }
