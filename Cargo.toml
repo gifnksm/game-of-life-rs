@@ -25,6 +25,6 @@ git = "https://github.com/seanmonstar/num_cpus"
 branch = "emscripten"
 git = "https://github.com/gifnksm/shaders"
 
-[replace."piston2d-opengl_graphics:0.36.0"]
-branch = "emscripten-0.36.0"
+[replace."piston2d-opengl_graphics:0.36.1"]
+branch = "emscripten-0.36.1"
 git = "https://github.com/gifnksm/opengl_graphics"
