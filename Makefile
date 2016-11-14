@@ -3,8 +3,8 @@ buildtype = release
 PROJECT = game-of-life-rs
 TARGET = asmjs-unknown-emscripten
 
-SRV_DIR = srv
-SRV_PORT = 8080
+DOCS_DIR = docs
+DOCS_PORT = 8080
 
 JS_FILE = $(PROJECT).js
 MEM_FILE = $(subst -,_,$(PROJECT)).js.mem
@@ -17,36 +17,36 @@ EMCC_OPTION = -s USE_SDL=2
 ifeq ($(buildtype),release)
 CARGO_OPTION += --release
 EMCC_OPTION += -O3
-SRV_FILES = $(SRV_DIR)/$(JS_FILE) $(SRV_DIR)/$(MEM_FILE)
+DOCS_FILES = $(DOCS_DIR)/$(JS_FILE) $(DOCS_DIR)/$(MEM_FILE)
 
 else ifeq ($(buildtype),debug)
 CARGO_OPTION +=
 EMCC_OPTION += -g4
-SRV_FILES = $(SRV_DIR)/$(JS_FILE)
+DOCS_FILES = $(DOCS_DIR)/$(JS_FILE)
 
 else
 $(error "unknown buildtype")
 endif
 
-all: $(SRV_FILES)
+all: $(DOCS_FILES)
 .PHONY: all
 
 clean:
 	cargo clean
-	$(RM) $(SRV_DIR)/$(JS_FILE) $(SRV_DIR)/$(MEM_FILE)
+	$(RM) $(DOCS_DIR)/$(JS_FILE) $(DOCS_DIR)/$(MEM_FILE)
 .PHONY: clean
 
-serve: $(SRV_FILES)
-	ruby -run -e httpd $(SRV_DIR) -p $(SRV_PORT)
+serve: $(DOCS_FILES)
+	ruby -run -e httpd $(DOCS_DIR) -p $(DOCS_PORT)
 
 FORCE:
 .PHONY: FORCE
 
 $(CARGO_OUTDIR)/$(JS_FILE): FORCE
-	$(RM) $(SRV_FILES)
+	$(RM) $(DOCS_FILES)
 	EMMAKEN_CFLAGS="$(EMCC_OPTION)" cargo build $(CARGO_OPTION)
 
 $(CARGO_OUTDIR)/$(MEM_FILE): $(CARGO_OUTDIR)/$(JS_FILE)
 
-$(SRV_DIR)/%: $(CARGO_OUTDIR)/% FORCE
+$(DOCS_DIR)/%: $(CARGO_OUTDIR)/% FORCE
 	cp $< $@
