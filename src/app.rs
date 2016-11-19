@@ -15,7 +15,7 @@ pub struct AppSettings {
 
 impl Default for AppSettings {
     fn default() -> Self {
-        let win_size = Size(640, 480);
+        let win_size = Size(1024, 768);
         let rect_size = 4;
         let board_size = Size(win_size.0 / rect_size, win_size.1 / rect_size);
 
