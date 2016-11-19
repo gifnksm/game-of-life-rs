@@ -33,10 +33,10 @@ fn main() {
     let mut app = App::new(&app_settings, gl_graphics);
     app.random_init(&mut rand::thread_rng());
 
-    event_loop::run(app, window);
+    event_loop::run(window, handle_event, app);
 }
 
-fn handle_event(e: Event, app: &mut App, window: &mut Sdl2Window) {
+fn handle_event(window: &mut Sdl2Window, e: Event, app: &mut App) {
     if let Some(_args) = e.update_args() {
         app.update();
     }
@@ -110,15 +110,16 @@ fn handle_event(e: Event, app: &mut App, window: &mut Sdl2Window) {
 
 #[cfg(not(target_os = "emscripten"))]
 mod event_loop {
-    use app::App;
+    use piston::event_loop::Events;
+    use piston::input::Event;
     use sdl2_window::Sdl2Window;
 
-    pub fn run(mut app: App, mut window: Sdl2Window) {
-        use piston::event_loop::Events;
-
+    pub fn run<T>(mut window: Sdl2Window,
+                  handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+                  mut arg: T) {
         let mut events = window.events();
         while let Some(e) = events.next(&mut window) {
-            super::handle_event(e, &mut app, &mut window);
+            handler(&mut window, e, &mut arg);
         }
     }
 }
@@ -126,7 +127,6 @@ mod event_loop {
 #[cfg(target_os = "emscripten")]
 mod event_loop {
     extern crate libc;
-    use app::App;
     use piston::input::{AfterRenderArgs, Event, RenderArgs, UpdateArgs};
     use piston::window::Window;
     use sdl2_window::Sdl2Window;
@@ -141,38 +141,42 @@ mod event_loop {
         pub fn emscripten_get_now() -> libc::c_float;
     }
 
-    struct EventLoop {
+    struct EventLoop<T> {
         last_updated: f64,
-        app: App,
         window: Sdl2Window,
+        handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+        arg: T,
     }
 
-    pub fn run(app: App, window: Sdl2Window) {
-        let mut events = Box::new(EventLoop {
-            last_updated: unsafe { emscripten_get_now() as f64 },
-            app: app,
-            window: window,
-        });
-
+    pub fn run<T>(window: Sdl2Window,
+                  handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+                  arg: T) {
         unsafe {
-            let events_ptr = &mut *events as *mut EventLoop as *mut libc::c_void;
-            emscripten_set_main_loop_arg(main_loop_c, events_ptr, 0, 1);
+            let mut events = Box::new(EventLoop {
+                last_updated: emscripten_get_now() as f64,
+                window: window,
+                handler: handler,
+                arg: arg,
+            });
+            let events_ptr = &mut *events as *mut EventLoop<_> as *mut libc::c_void;
+            emscripten_set_main_loop_arg(main_loop_c::<T>, events_ptr, 0, 1);
             mem::forget(events);
         }
     }
 
-    extern "C" fn main_loop_c(arg: *mut libc::c_void) {
+    extern "C" fn main_loop_c<T>(arg: *mut libc::c_void) {
         unsafe {
-            let mut events: &mut EventLoop = mem::transmute(arg);
-            let app = &mut events.app;
+            let mut events: &mut EventLoop<T> = mem::transmute(arg);
             let window = &mut events.window;
+            let handler = events.handler;
+            let arg = &mut events.arg;
             window.swap_buffers();
 
             let e = Event::AfterRender(AfterRenderArgs);
-            super::handle_event(e, app, window);
+            handler(window, e, arg);
 
             while let Some(e) = window.poll_event() {
-                super::handle_event(Event::Input(e), app, window);
+                handler(window, Event::Input(e), arg);
             }
 
             if window.should_close() {
@@ -185,7 +189,7 @@ mod event_loop {
             events.last_updated = now;
 
             let e = Event::Update(UpdateArgs { dt: dt });
-            super::handle_event(e, app, window);
+            handler(window, e, arg);
 
             let size = window.size();
             let draw_size = window.draw_size();
@@ -196,7 +200,7 @@ mod event_loop {
                 draw_width: draw_size.width,
                 draw_height: draw_size.height,
             });
-            super::handle_event(e, app, window);
+            handler(window, e, arg);
         }
     }
 }
