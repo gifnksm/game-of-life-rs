@@ -7,7 +7,7 @@ DOCS_DIR = docs
 DOCS_PORT = 8080
 
 JS_FILE = $(PROJECT).js
-MEM_FILE = $(subst -,_,$(PROJECT)).js.mem
+MEM_FILE = $(subst -,_,$(PROJECT))-*.js.mem
 
 CARGO_OUTDIR = target/$(TARGET)/$(buildtype)
 
@@ -48,5 +48,9 @@ $(CARGO_OUTDIR)/$(JS_FILE): FORCE
 
 $(CARGO_OUTDIR)/$(MEM_FILE): $(CARGO_OUTDIR)/$(JS_FILE)
 
-$(DOCS_DIR)/%: $(CARGO_OUTDIR)/% FORCE
+$(DOCS_DIR)/$(JS_FILE): $(CARGO_OUTDIR)/$(JS_FILE) FORCE
 	cp $< $@
+
+$(DOCS_DIR)/$(MEM_FILE): $(CARGO_OUTDIR)/$(JS_FILE) FORCE
+	cp $(CARGO_OUTDIR)/deps/$(MEM_FILE) $(DOCS_DIR)
+
