@@ -1,7 +1,7 @@
 [package]
 authors = ["gifnksm <makoto.nksm+github@gmail.com>"]
 description = "Conway's Game of Life implementations for Native/Emscripten"
-license = "MIT OR Apache-2.0"
+license = "MIT/Apache-2.0"
 name = "game-of-life-rs"
 readme = "README.md"
 repository = "https://github.com/gifnksm/game-of-life-rs"
