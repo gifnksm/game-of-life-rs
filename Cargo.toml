@@ -8,24 +8,14 @@ repository = "https://github.com/gifnksm/game-of-life-rs"
 version = "0.1.0"
 
 [dependencies]
-board-game-geom = "0.2.0"
-image = "0.10.3"
-piston = "0.27.0"
-piston2d-graphics = "0.19.0"
-piston2d-opengl_graphics = "0.36.0"
-pistoncore-sdl2_window = "0.37.0"
-rand = "0.3.14"
-time = "0.1.35"
+board-game-geom = "0.2"
+image = "0.12"
+piston = "0.31"
+piston2d-graphics = "0.21"
+piston2d-opengl_graphics = "0.40"
+pistoncore-sdl2_window = "0.40"
+rand = "0.3"
+time = "0.1"
 
 [target.'cfg(target_os = "emscripten")'.dependencies]
 libc = "0.2.17"
-
-[replace]
-
-[replace."piston-shaders_graphics2d:0.1.0"]
-branch = "emscripten"
-git = "https://github.com/gifnksm/shaders"
-
-[replace."piston2d-opengl_graphics:0.36.2"]
-branch = "emscripten-0.36.2"
-git = "https://github.com/gifnksm/opengl_graphics"

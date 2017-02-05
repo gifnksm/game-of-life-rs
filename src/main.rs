@@ -9,8 +9,8 @@ extern crate time;
 
 use app::{App, AppSettings};
 use opengl_graphics::{GlGraphics, OpenGL};
-use piston::input::{Button, Event, Key, MouseButton, MouseCursorEvent, MouseScrollEvent,
-                    PressEvent, ReleaseEvent, RenderEvent, ResizeEvent, UpdateEvent};
+use piston::input::{Button, Input, Key, MouseButton, MouseCursorEvent, MouseScrollEvent, PressEvent,
+                    ReleaseEvent, RenderEvent, ResizeEvent, UpdateEvent};
 use piston::window::{OpenGLWindow, WindowSettings};
 use sdl2_window::Sdl2Window;
 
@@ -36,7 +36,7 @@ fn main() {
     event_loop::run(window, handle_event, app);
 }
 
-fn handle_event(window: &mut Sdl2Window, e: Event, app: &mut App) {
+fn handle_event(window: &mut Sdl2Window, e: Input, app: &mut App) {
     if let Some(_args) = e.update_args() {
         app.update();
     }
@@ -110,14 +110,14 @@ fn handle_event(window: &mut Sdl2Window, e: Event, app: &mut App) {
 
 #[cfg(not(target_os = "emscripten"))]
 mod event_loop {
-    use piston::event_loop::Events;
-    use piston::input::Event;
+    use piston::event_loop::{EventSettings, Events};
+    use piston::input::Input;
     use sdl2_window::Sdl2Window;
 
     pub fn run<T>(mut window: Sdl2Window,
-                  handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+                  handler: fn(window: &mut Sdl2Window, e: Input, arg: &mut T),
                   mut arg: T) {
-        let mut events = window.events();
+        let mut events = Events::new(EventSettings::new());
         while let Some(e) = events.next(&mut window) {
             handler(&mut window, e, &mut arg);
         }
@@ -127,7 +127,7 @@ mod event_loop {
 #[cfg(target_os = "emscripten")]
 mod event_loop {
     extern crate libc;
-    use piston::input::{AfterRenderArgs, Event, RenderArgs, UpdateArgs};
+    use piston::input::{AfterRenderArgs, Input, RenderArgs, UpdateArgs};
     use piston::window::Window;
     use sdl2_window::Sdl2Window;
     use std::mem;
@@ -144,12 +144,12 @@ mod event_loop {
     struct EventLoop<T> {
         last_updated: f64,
         window: Sdl2Window,
-        handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+        handler: fn(window: &mut Sdl2Window, e: Input, arg: &mut T),
         arg: T,
     }
 
     pub fn run<T>(window: Sdl2Window,
-                  handler: fn(window: &mut Sdl2Window, e: Event, arg: &mut T),
+                  handler: fn(window: &mut Sdl2Window, e: Input, arg: &mut T),
                   arg: T) {
         unsafe {
             let mut events = Box::new(EventLoop {
@@ -172,11 +172,11 @@ mod event_loop {
             let arg = &mut events.arg;
             window.swap_buffers();
 
-            let e = Event::AfterRender(AfterRenderArgs);
+            let e = Input::AfterRender(AfterRenderArgs);
             handler(window, e, arg);
 
             while let Some(e) = window.poll_event() {
-                handler(window, Event::Input(e), arg);
+                handler(window, e, arg);
             }
 
             if window.should_close() {
@@ -188,12 +188,12 @@ mod event_loop {
             let dt = now - events.last_updated;
             events.last_updated = now;
 
-            let e = Event::Update(UpdateArgs { dt: dt });
+            let e = Input::Update(UpdateArgs { dt: dt });
             handler(window, e, arg);
 
             let size = window.size();
             let draw_size = window.draw_size();
-            let e = Event::Render(RenderArgs {
+            let e = Input::Render(RenderArgs {
                 ext_dt: dt,
                 width: size.width,
                 height: size.height,

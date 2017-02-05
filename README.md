@@ -33,7 +33,7 @@ This game runs on both the web and native!
    cd game-of-life-rs.git
 
    export LIBRARY_PATH=<path_to_sdl2> # optional
-   cargo run --release  
+   cargo run --release
    ```
 
 ## How to Build for the Web
@@ -94,9 +94,9 @@ https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627
    make
    make serve
    ```
- 
+
 5. Access to the Following URL
- 
+
    ```
    http://localhost:8080/
    ```
