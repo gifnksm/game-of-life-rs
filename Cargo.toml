@@ -18,4 +18,7 @@ rand = "0.3"
 time = "0.1"
 
 [target.'cfg(target_os = "emscripten")'.dependencies]
-libc = "0.2.17"
+emscripten-sys = "0.1.0"
+
+[replace]
+"clang-sys:0.14.0" = { git = "https://github.com/KyleMayes/clang-sys.git" }

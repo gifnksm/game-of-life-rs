@@ -126,20 +126,13 @@ mod event_loop {
 
 #[cfg(target_os = "emscripten")]
 mod event_loop {
-    extern crate libc;
+    extern crate emscripten_sys;
+
     use piston::input::{AfterRenderArgs, Input, RenderArgs, UpdateArgs};
     use piston::window::Window;
     use sdl2_window::Sdl2Window;
     use std::mem;
-
-    extern "C" {
-        pub fn emscripten_set_main_loop_arg(func: extern "C" fn(*mut libc::c_void),
-                                            arg: *mut libc::c_void,
-                                            fps: libc::c_int,
-                                            simulate_infinite_loop: libc::c_int);
-        pub fn emscripten_cancel_main_loop();
-        pub fn emscripten_get_now() -> libc::c_float;
-    }
+    use std::os::raw::c_void;
 
     struct EventLoop<T> {
         last_updated: f64,
@@ -153,18 +146,18 @@ mod event_loop {
                   arg: T) {
         unsafe {
             let mut events = Box::new(EventLoop {
-                last_updated: emscripten_get_now() as f64,
+                last_updated: emscripten_sys::emscripten_get_now() as f64,
                 window: window,
                 handler: handler,
                 arg: arg,
             });
-            let events_ptr = &mut *events as *mut EventLoop<_> as *mut libc::c_void;
-            emscripten_set_main_loop_arg(main_loop_c::<T>, events_ptr, 0, 1);
+            let events_ptr = &mut *events as *mut EventLoop<_> as *mut c_void;
+            emscripten_sys::emscripten_set_main_loop_arg(Some(main_loop_c::<T>), events_ptr, 0, 1);
             mem::forget(events);
         }
     }
 
-    extern "C" fn main_loop_c<T>(arg: *mut libc::c_void) {
+    extern "C" fn main_loop_c<T>(arg: *mut c_void) {
         unsafe {
             let mut events: &mut EventLoop<T> = mem::transmute(arg);
             let window = &mut events.window;
@@ -180,11 +173,11 @@ mod event_loop {
             }
 
             if window.should_close() {
-                emscripten_cancel_main_loop();
+                emscripten_sys::emscripten_cancel_main_loop();
                 return;
             }
 
-            let now = emscripten_get_now() as f64;
+            let now = emscripten_sys::emscripten_get_now() as f64;
             let dt = now - events.last_updated;
             events.last_updated = now;
 
