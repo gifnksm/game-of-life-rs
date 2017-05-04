@@ -6,7 +6,19 @@ addons:
   apt:
     packages:
       - libsdl2-dev
+
+install:
+  - ci/install.sh
+
+build:
+  - ci/build.sh
+
 rust:
   - stable
   - beta
   - nightly
+
+env:
+  matrix:
+    - TARGET=native
+    - TARGET=web
