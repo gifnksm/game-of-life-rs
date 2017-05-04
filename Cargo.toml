@@ -9,16 +9,14 @@ version = "0.1.0"
 
 [dependencies]
 board-game-geom = "0.2"
-image = "0.12"
-piston = "0.31"
+image = "0.13"
+piston = "0.32"
 piston2d-graphics = "0.21"
-piston2d-opengl_graphics = "0.42"
-pistoncore-sdl2_window = "0.41"
+piston2d-opengl_graphics = "0.43"
+pistoncore-sdl2_window = "0.42"
 rand = "0.3"
 time = "0.1"
 
 [target.'cfg(target_os = "emscripten")'.dependencies]
-emscripten-sys = "0.1.0"
+emscripten-sys = "0.3.0"
 
-[replace]
-"clang-sys:0.14.0" = { git = "https://github.com/KyleMayes/clang-sys.git" }
