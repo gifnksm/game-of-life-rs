@@ -1,5 +1,5 @@
 language: rust
-sudo: false
+sudo: required
 dist: trusty
 
 addons:
@@ -7,11 +7,14 @@ addons:
     packages:
       - libsdl2-dev
 
+services:
+  - docker
+
 install:
   - ci/install.sh
 
-build:
-  - ci/build.sh
+script:
+  - ci/script.sh
 
 rust:
   - stable
@@ -19,6 +22,8 @@ rust:
   - nightly
 
 env:
+  global:
+    - DOCKER_IMAGE=rust-emsdk
   matrix:
     - TARGET=native
     - TARGET=web

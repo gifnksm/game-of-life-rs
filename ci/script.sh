@@ -2,8 +2,7 @@
 
 case "${TARGET}" in
   web)
-    . emsdk/emsdk_env.sh
-    make
+    docker run -v $(pwd):/build -w /build ${DOCKER_IMAGE} ci/script_docker.sh
     ;;
   native)
     cargo build --verbose
