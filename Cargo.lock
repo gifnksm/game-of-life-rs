@@ -3,7 +3,7 @@ name = "game-of-life-rs"
 version = "0.1.0"
 dependencies = [
  "board-game-geom 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "emscripten-sys 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "emscripten-sys 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston2d-graphics 0.21.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -67,7 +67,7 @@ dependencies = [
  "cexpr 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clang-sys 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 2.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "2.23.3"
+version = "2.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "ansi_term 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -148,7 +148,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "deflate"
-version = "0.7.9"
+version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "adler32 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -162,7 +162,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "emscripten-sys"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bindgen 0.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -494,7 +494,7 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "deflate 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "deflate 0.7.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "inflate 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-iter 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -803,11 +803,11 @@ dependencies = [
 "checksum cexpr 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "393a5f0088efbe41f9d1fcd062f24e83c278608420e62109feb2c8abee07de7d"
 "checksum cfg-if 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "de1e760d7b6535af4241fca8bd8adf68e2e7edacc6b29f5d399050c5e48cf88c"
 "checksum clang-sys 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5f4f6aa0c4cfa318cd4d2940afae57e48b94d44d3aced603501df24f3c2a414f"
-"checksum clap 2.23.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f57e9b63057a545ad2ecd773ea61e49422ed1b1d63d74d5da5ecaee55b3396cd"
+"checksum clap 2.24.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b7541069be0b8aec41030802abe8b5cdef0490070afaa55418adea93b1e431e0"
 "checksum color_quant 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a475fc4af42d83d28adf72968d9bcfaf035a1a9381642d8e85d8a04957767b0d"
-"checksum deflate 0.7.9 (registry+https://github.com/rust-lang/crates.io-index)" = "464225978f3f01068194aa948852ec121d179c3f874d499d74c432953bf1917b"
+"checksum deflate 0.7.10 (registry+https://github.com/rust-lang/crates.io-index)" = "8f39474a23b492b7ec97604c7828abd05771b28ed03cac0c6b884e79f9980283"
 "checksum deque 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a694dae478589798d752c7125542f8a5ae8b6e59476172baf2eed67357bdfa27"
-"checksum emscripten-sys 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cef84521424f7f4bd2dc0069bbdb3bc40c131070fe02f36a0d6963c8c4b499d7"
+"checksum emscripten-sys 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6039295dbe09aac8b9a836f427b5663306d20c00df750a485c5fac9634733639"
 "checksum enum_primitive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "be4551092f4d519593039259a9ed8daedf0da12e5109c5280338073eaeb81180"
 "checksum env_logger 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e3856f1697098606fc6cb97a93de88ca3f3bc35bb878c725920e6e82ecf05e83"
 "checksum fnv 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6cc484842f1e2884faf56f529f960cc12ad8c71ce96cc7abba0a067c98fee344"
