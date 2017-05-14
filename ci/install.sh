@@ -2,9 +2,11 @@
 
 case "${TARGET}" in
   web)
-    git clone https://github.com/juj/emsdk.git
-    . emsdk/emsdk_env.sh
-    emsdk install -j1 sdk-1.37.9-64bit binaryen-tag-1.37.9-64bit
+    docker build --rm -t ${DOCKER_IMAGE} \
+      --build-arg RUST_VERSION=${TRAVIS_RUST_VERSION} \
+      --build-arg BUILD_UID=$(id -u) \
+      --build-arg BUILD_GID=$(id -g) \
+      ci
     ;;
   native)
     ;;
