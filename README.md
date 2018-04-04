@@ -46,7 +46,7 @@ https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627
    ```
    curl -O https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
    tar -xzf emsdk-portable.tar.gz
-   source emsdk_portable/emsdk_env.sh
+   source emsdk-portable/emsdk_env.sh
    emsdk update
    emsdk install sdk-incoming-64bit
    emsdk activate sdk-incoming-64bit
@@ -62,7 +62,7 @@ https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627
 
    ```
    # Set envvars for Emscripten toolchains
-   source emsdk_portable/emsdk_env.sh
+   source emsdk-portable/emsdk_env.sh
 
    echo "int main(void) { return 0; }" > empty.c
    emcc -s USE_SDL=2 empty.c     # for debug builds
@@ -88,7 +88,7 @@ https://users.rust-lang.org/t/compiling-to-the-web-with-rust-and-emscripten/7627
    rustup override set nightly
 
    # Set envvars for Emscripten toolchains
-   source emsdk_portable/emsdk_env.sh
+   source emsdk-portable/emsdk_env.sh
 
    # Build and serve
    make
