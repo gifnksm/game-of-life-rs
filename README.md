@@ -30,7 +30,7 @@ This game runs on both the web and native!
 
    ```
    git clone https://github.com/gifnksm/game-of-life-rs.git
-   cd game-of-life-rs.git
+   cd game-of-life-rs
 
    export LIBRARY_PATH=<path_to_sdl2> # optional
    cargo run --release
